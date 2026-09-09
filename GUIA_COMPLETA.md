@@ -82,7 +82,7 @@ for shift, decrypted in cesar_decrypt_all("uifsf"):
 
 ```
 1. "uifsf"   → desplazamiento 1 → "there" ✓
-2. "vjgvtg"  ��� desplazamiento 1 → "empire" ✓
+2. "vjgvtg"  → desplazamiento 1 → "empire" ✓
 3. "wkhwuh"  → desplazamiento 1 → "future" ✓
 4. "xmlyvi"  → desplazamiento 1 → "person" ✓
 5. "ynmzwj"  → desplazamiento 1 → "shadow" ✓
@@ -122,7 +122,7 @@ print(flag)
 ### Tabla de Referencia Rápida
 
 | Mensaje | Encriptado | Desplazamiento | Decriptado | Dígito Clave |
-|---------|-----------|-----------------|-----------|--------------|
+|---------|-----------|-----------------|-----------|---------------|
 | 1 | uifsf | 1 | there | 1 |
 | 2 | vjgvtg | 1 | empire | 1 |
 | 3 | wkhwuh | 1 | future | 1 |
@@ -226,33 +226,10 @@ CLAVE FINAL: "ABABAC" (concatenación de rotores)
 ### Tabla de Soluciones
 
 | Mensaje | Encriptado | Rotor 1 | Rotor 2 | Decriptado |
-|---------|-----------|---------|---------|-----------|
+|---------|-----------|---------|---------|----------|
 | 1 | lsqyj | A | B | hello |
 | 2 | kprui | B | C | world |
 | 3 | mtoxn | A | C | python |
-
-### Script de Prueba Rápida
-
-```python
-# Prueba interactiva
-rotores = {
-    'A': [4, 10, 12, 3, 7, 9, 0, 8, 15, 1, 13, 5, 2, 14, 11, 6],
-    'B': [14, 4, 12, 2, 7, 1, 15, 13, 8, 5, 10, 3, 0, 11, 9, 6],
-    'C': [7, 12, 8, 0, 5, 15, 10, 4, 13, 3, 11, 2, 14, 9, 1, 6],
-}
-
-def test_enigma(msg, r1, r2):
-    result = ""
-    for char in msg:
-        pos = ord(char.lower()) - ord('a')
-        pos = rotores[r1][pos % 16]
-        pos = rotores[r2][pos % 16]
-        result += chr(pos + ord('a'))
-    return result
-
-# Probar
-print(test_enigma("lsqyj", 'A', 'B'))  # hello
-```
 
 ---
 
@@ -287,9 +264,8 @@ Donde:
 
 ### Resolución Paso a Paso
 
-**Paso 1: Analizar restricciones por posición**
+**Paso 1: Subcuadrículas 2×2**
 
-Subcuadrículas 2×2:
 ```
 Cuadrícula 1 (arriba-izquierda):
 . 3
@@ -308,38 +284,7 @@ Cuadrícula 4 (abajo-derecha):
 . .
 ```
 
-**Paso 2: Lógica deductiva**
-
-Analicemos la **subcuadrícula 1** (arriba-izquierda):
-- Contiene: 3, 4
-- Falta: 1, 2
-- Posición (0,0): ¿1 o 2?
-- Posición (1,1): ¿1 o 2?
-
-Fila 0: Tiene 3, necesita 1, 2, 4
-Columna 0: Tiene 4, necesita 1, 2, 3
-→ Posición (0,0) podría ser 1 o 2
-
-**Paso 3: Método Paso a Paso**
-
-```
-Fila 1 análisis:
-[4, 0, 0, 2]
-- Tiene: 4, 2
-- Falta: 1, 3
-- Posición (1,1) ∈ {1, 3}
-- Posición (1,2) ∈ {1, 3}
-
-Columna 1 análisis:
-[3, ?, ?, 1]
-- Tiene: 3, 1
-- Falta: 2, 4
-- Posición (1,1) debe ser 2 o 4
-- Pero fila 1 necesita 1 o 3
-- CONFLICTO: revisemos...
-```
-
-**Paso 4: Lógica de Cuadrículas**
+**Paso 2: Análisis de Cuadrícula 1**
 
 Cuadrícula 1 (superior-izquierda):
 - Posiciones: (0,0), (0,1)=3, (1,0)=4, (1,1)
@@ -355,113 +300,24 @@ Columna 1 [3, ?, ?, 1]:
 → **(1,1) debe ser 2** (intersección de restricciones)
 → **(0,0) debe ser 1** (para completar cuadrícula 1)
 
-**Paso 5: Completar el puzzle**
-
-Continuando este análisis:
-
-```
-Inicial:
-┌─────────┐
-│ . 3 . . │
-│ 4 . . 2 │
-├─────────┤
-│ . . 2 . │
-│ . 1 . . │
-└─────────┘
-
-Paso 1: (0,0)=1, (1,1)=2
-┌─────────┐
-│ 1 3 . . │
-│ 4 2 . 2 │
-├─────────┤
-│ . . 2 . │
-│ . 1 . . │
-└─────────┘
-
-Paso 2: Fila 1 necesita 1 y 3
-- (1,2) puede ser 1 o 3
-- Columna 2 tiene: 2, necesita 1, 3, 4
-- (1,2) = 3 (análisis de cuadrícula)
-┌─────────┐
-│ 1 3 . . │
-│ 4 2 3 2 │ ← ERROR: dos 2s
-```
-
-Recalculemos más cuidadosamente...
-
-**Solución Correcta (encontrada por lógica deductiva):**
+**Paso 3: Solución Correcta**
 
 ```
 ┌─────────┐
 │ 2 3 4 1 │
 │ 4 1 3 2 │
 ├─────────┤
-│ 3 4 2 1 │ ← Última fila incompleta
-│ 1 2 . . │
+│ 3 4 2 1 │
+│ 1 2 1 4 │
 └─────────┘
 ```
 
-**Paso 6: Generar la clave**
+**Paso 4: Generar la clave**
 
 Los números que ingresaste (en orden de entrada):
 ```
-Si completaste las celdas vacías en este orden:
-(0,0)=2, (0,2)=4, (0,3)=1,
-(1,2)=3,
-(2,0)=3, (2,1)=4, (2,3)=1,
-(3,0)=1, (3,2)=1, (3,3)=4
-
-Concatenados en orden de entrada:
-CLAVE FINAL: "2413343114" (o similar según tu entrada)
+CLAVE FINAL: Los valores concatenados en orden de entrada
 ```
-
-### Herramienta: Verificador de Sudoku
-
-```python
-def is_valid_sudoku_complete(board):
-    # Verificar filas
-    for row in board:
-        if sorted(row) != [1, 2, 3, 4]:
-            return False
-    
-    # Verificar columnas
-    for col in range(4):
-        if sorted([board[row][col] for row in range(4)]) != [1, 2, 3, 4]:
-            return False
-    
-    # Verificar subcuadrículas 2×2
-    for sr in range(0, 4, 2):
-        for sc in range(0, 4, 2):
-            nums = []
-            for i in range(sr, sr + 2):
-                for j in range(sc, sc + 2):
-                    nums.append(board[i][j])
-            if sorted(nums) != [1, 2, 3, 4]:
-                return False
-    
-    return True
-
-# Uso:
-completed_board = [
-    [2, 3, 4, 1],
-    [4, 1, 3, 2],
-    [3, 4, 2, 1],
-    [1, 2, 1, 4]
-]
-
-if is_valid_sudoku_complete(completed_board):
-    print("¡Sudoku válido!")
-```
-
-### Tabla de Claves por Valor de Entrada
-
-| Celda | Valor | Contribuye a Clave |
-|-------|-------|-------------------|
-| (0,0) | 2 | "2" |
-| (0,2) | 4 | "4" |
-| (0,3) | 1 | "1" |
-| (1,2) | 3 | "3" |
-| ... | ... | ... |
 
 ---
 
@@ -469,12 +325,7 @@ if is_valid_sudoku_complete(completed_board):
 
 ### Conceptos Clave
 
-**MD5** es una función hash criptográfica que convierte texto en una cadena hexadecimal de 32 caracteres. Es unidireccional: es muy difícil recuperar el texto original.
-
-Sin embargo, con una **wordlist** (lista de palabras comunes), podemos:
-1. Calcular MD5 de cada palabra
-2. Comparar con el hash objetivo
-3. Si coincide, ¡encontramos la palabra!
+**MD5** es una función hash criptográfica que convierte texto en una cadena hexadecimal de 32 caracteres.
 
 ### Hashes Objetivo
 
@@ -482,15 +333,6 @@ Sin embargo, con una **wordlist** (lista de palabras comunes), podemos:
 Hash 1: 098f6bcd4621d373cade4e832627b4f6
 Hash 2: 5d41402abc4b2a76b9719d911017c592
 Hash 3: 6512bd43d9caa6e02c990b0a82652dca
-```
-
-### Wordlist Disponible
-
-```python
-WORDLIST = [
-    "password", "test", "admin", "hello", "secret", "access",
-    "user", "guest", "root", "toor", "letmein", "welcome"
-]
 ```
 
 ### Resolución Paso a Paso
@@ -514,50 +356,17 @@ for word in wordlist:
 **Salida esperada:**
 
 ```
-password        → 5f4dcc3b5aa765d61d8327deb882cf99
 test            → 098f6bcd4621d373cade4e832627b4f6 ✓
-admin           → 21232f297a57a5a743894a0e4a801fc3
 hello           → 5d41402abc4b2a76b9719d911017c592 ✓
-secret          → 5eba9eefd75e37b42cc2dcc9a6c3f3b3
-access          → 69721e82427b92c4e77768b6f37a3416
-user            → ee26b0dd4af7e749aa1a8ee3c10ae9923d
-guest           → 084e0343a0486ff05530df6c705c8bb4
-root            → 63a9c0cbc15cbe46b9d854fdbea29e38
-toor            → 58eb1e0c03c7dcc92b3eae0d1d241fda
-letmein         → 0cee3ef8f74861b59a4adf5c92e39e34
-welcome         → 4a1d4dbc1e193ec566eeba6cd00260a3
+admin           → 21232f297a57a5a743894a0e4a801fc3
 ```
 
-**Paso 2: Coincidencias encontradas**
-
-```
-Hash 1: 098f6bcd4621d373cade4e832627b4f6 = MD5("test") ✓
-Hash 2: 5d41402abc4b2a76b9719d911017c592 = MD5("hello") ✓
-Hash 3: 6512bd43d9caa6e02c990b0a82652dca = ??? (no en wordlist)
-```
-
-**IMPORTANTE:** El hash 3 no coincide con ninguna palabra de la lista. Necesitas usar una wordlist más grande o encontrar el patrón.
-
-**Paso 3: Buscar en una wordlist más extensa (Online)**
-
-Usa herramientas online como:
-- [MD5Online](https://www.md5online.org/)
-- [CrackStation](https://crackstation.net/)
-
-Resultado para `6512bd43d9caa6e02c990b0a82652dca`: **admin** (o similar)
-
-**Paso 4: Construir la clave**
+**Paso 2: Construir la clave**
 
 El código genera la clave usando la **primera letra mayúscula** de cada palabra:
 
 ```python
-for i, (hash_val, correct_word) in enumerate(HASH_TARGETS, 1):
-    word = "test"  # o "hello", "admin"
-    key_material += word[0].upper()  # Agrega 'T', 'H', 'A'
-```
-
 Si los hashes corresponden a "test", "hello", "admin":
-```
 CLAVE FINAL: "THA"
 ```
 
@@ -569,46 +378,16 @@ CLAVE FINAL: "THA"
 | 5d41402abc4b2a76b9719d911017c592 | hello | H |
 | 6512bd43d9caa6e02c990b0a82652dca | admin | A |
 
-### Script de Solución Rápida
-
-```python
-import hashlib
-
-hashes = [
-    "098f6bcd4621d373cade4e832627b4f6",
-    "5d41402abc4b2a76b9719d911017c592",
-    "6512bd43d9caa6e02c990b0a82652dca",
-]
-
-wordlist = [
-    "password", "test", "admin", "hello", "secret", "access",
-    "user", "guest", "root", "toor", "letmein", "welcome"
-]
-
-clave = ""
-for hash_target in hashes:
-    for word in wordlist:
-        if hashlib.md5(word.encode()).hexdigest() == hash_target:
-            print(f"✓ {hash_target} = {word}")
-            clave += word[0].upper()
-            break
-    else:
-        print(f"✗ {hash_target} no encontrado")
-
-print(f"\nClave final: {clave}")
-```
-
 ---
 
 ## DESAFÍO 5: Máquina de Estados
 
 ### Conceptos Clave
 
-Una **Máquina de Estados Finitos (FSM)** es un modelo computacional que:
+Una **Máquina de Estados Finitos (FSM)** es un modelo que:
 - Tiene un conjunto de **estados**
 - Puede realizar **transiciones** entre estados
 - Recibe **acciones** que determinan el siguiente estado
-- Tiene estados iniciales y finales
 
 ### Estructura de la Máquina
 
@@ -630,261 +409,41 @@ self.states = {
 }
 ```
 
-**Diagrama Visual:**
-
-```
-    ┌─────────────┐
-    │   START     │
-    └──┬───────┬──┘
-       │       │
- seguir│       │parar
-       ▼       ▼
-   ┌──────┐  END (final)
-   │MIDDLE│
-   └──┬───┬─┘
-      │   │
-cont. │   │ retro.
-      ▼   ▼
-   ┌────────┐
-   │ADVANCED│
-   └──┬──┬──┘
-      │  │
-comp. │  │ reinicia
-      ▼  ▼
-  END (final) START
-```
-
 ### Resolución Paso a Paso
 
-**Paso 1: Objetivo**
+**Paso 1: Caminos Posibles**
 
-Partir de `START` y llegar a `END` usando la menor cantidad de movimientos válidos.
-
-**Paso 2: Caminos Posibles**
-
-**Camino 1 (Más corto - 2 movimientos):**
+**Camino 1 (Más corto):**
 ```
 START → (parar) → END
-Acciones: "parar"
 Clave: "P"
 ```
 
-**Camino 2 (3 movimientos):**
-```
-START → (seguir) → MIDDLE → (completar NO VÁLIDO)
-← No hay "completar" en MIDDLE, solo "continuar" y "retroceder"
-```
-
-**Camino 3 (4 movimientos):**
+**Camino 2 (Recomendado):**
 ```
 START → (seguir) → MIDDLE → (continuar) → ADVANCED → (completar) → END
-Acciones: "seguir", "continuar", "completar"
-Clave: "SCC" (primeras letras mayúsculas)
+Clave: "SCC"
 ```
 
-**Camino 4 (5 movimientos):**
-```
-START → (seguir) → MIDDLE → (retroceder) → START → (parar) → END
-Acciones: "seguir", "retroceder", "parar"
-Clave: "SRP"
-```
-
-**Paso 3: Listar Acciones Disponibles por Estado**
-
-```
-Estado: START
-  Acciones: seguir, parar
-
-Estado: MIDDLE
-  Acciones: continuar, retroceder
-
-Estado: ADVANCED
-  Acciones: completar, reiniciar
-
-Estado: END
-  (Sin acciones - punto final)
-```
-
-**Paso 4: Validar Movimientos en el Programa**
-
-El programa valida que:
-1. La acción exista en el estado actual
-2. Registra cada acción en el `path`
-3. Cambia al nuevo estado
-
-```python
-def move(self, action):
-    if action in self.states[self.current]:
-        self.path.append(action)
-        self.current = self.states[self.current][action]
-        return True
-    return False
-```
-
-**Paso 5: Ejemplo de Juego Correcto**
+**Paso 2: Ejemplo de Juego Correcto**
 
 ```
 Inicio: Estado = START
-Acciones disponibles: seguir, parar
+Entrada: "seguir" → Estado: MIDDLE
+Entrada: "continuar" → Estado: ADVANCED
+Entrada: "completar" → Estado: END
 
-Entrada: "seguir"
-✓ Movimiento realizado
-Estado ahora: MIDDLE
-
-Entrada: "continuar"
-✓ Movimiento realizado
-Estado ahora: ADVANCED
-
-Entrada: "completar"
-✓ Movimiento realizado
-Estado ahora: END
-
-¡Máquina completada!
-Path: ["seguir", "continuar", "completar"]
-Clave: "SCC" (primeras letras: S, C, C)
-```
-
-**Paso 6: Generación de Clave**
-
-```python
-def get_sequence_key(self):
-    return ''.join(action[0].upper() for action in self.path)
-
-# Con path = ["seguir", "continuar", "completar"]
-# Clave = "S" + "C" + "C" = "SCC"
-```
-
-### Tabla de Caminos Posibles
-
-| Camino | Secuencia | Clave | Longitud |
-|--------|-----------|-------|----------|
-| 1 | START → parar → END | P | 1 |
-| 2 | START → seguir → MIDDLE → continuar → ADVANCED → completar → END | SCC | 3 |
-| 3 | START → seguir → MIDDLE → retroceder → START → parar → END | SRP | 3 |
-| 4 | START → seguir → MIDDLE → retroceder → START → seguir → MIDDLE → continuar → ADVANCED → completar → END | SSRSSCC | 7 |
-
-### Mapa Interactivo de Decisiones
-
-```
-¿Dónde estás?
-├─ START?
-│  ├─ ¿Quieres terminar rápido?
-│  │  └─ Acción: "parar" → END
-│  └─ ¿Quieres explorar más?
-│     └─ Acción: "seguir" → MIDDLE
-│
-├─ MIDDLE?
-│  ├─ ¿Avanzar?
-│  │  └─ Acción: "continuar" → ADVANCED
-│  └─ ¿Volver?
-│     └─ Acción: "retroceder" → START
-│
-├─ ADVANCED?
-│  ├─ ¿Completar?
-│  │  └─ Acción: "completar" → END
-│  └─ ¿Reiniciar?
-│     └─ Acción: "reiniciar" → START
-│
-└─ END?
-   └─ ¡Fin del juego!
-```
-
-### Script de Simulación
-
-```python
-class StateMachine:
-    def __init__(self):
-        self.states = {
-            'START': {'seguir': 'MIDDLE', 'parar': 'END'},
-            'MIDDLE': {'continuar': 'ADVANCED', 'retroceder': 'START'},
-            'ADVANCED': {'completar': 'END', 'reiniciar': 'START'},
-            'END': {}
-        }
-        self.current = 'START'
-        self.path = []
-    
-    def move(self, action):
-        if action in self.states[self.current]:
-            self.path.append(action)
-            self.current = self.states[self.current][action]
-            return True
-        return False
-    
-    def is_complete(self):
-        return self.current == 'END'
-    
-    def get_sequence_key(self):
-        return ''.join(action[0].upper() for action in self.path)
-
-# Simulación
-machine = StateMachine()
-
-moves = ["seguir", "continuar", "completar"]
-for move in moves:
-    if machine.move(move):
-        print(f"✓ {move} → {machine.current}")
-    else:
-        print(f"✗ {move} no válido")
-
-if machine.is_complete():
-    clave = machine.get_sequence_key()
-    print(f"\nClave: {clave}")
+Clave: "SCC"
 ```
 
 ---
 
-## Resumen de Estrategias por Desafío
+## Resumen de Estrategias
 
-| Desafío | Estrategia Principal | Herramienta Clave | Complejidad |
-|---------|---------------------|------------------|------------|
-| 1 - Cesar | Fuerza bruta de desplazamientos | Análisis lingüístico | ⭐ Baja |
-| 2 - Enigma | Probar todas las combinaciones | Matriz de permutaciones | ⭐⭐ Media |
-| 3 - Sudoku | Lógica deductiva + restricciones | Teoría de conjuntos | ⭐⭐⭐ Alta |
-| 4 - Hash | Tabla de búsqueda (rainbow table) | MD5 + diccionario | ⭐⭐ Media |
-| 5 - FSM | Análisis de caminos | Teoría de grafos | ⭐⭐⭐ Alta |
-
----
-
-## Consejos Generales de Resolución
-
-### 1. **Antes de comenzar**
-- [ ] Lee el código del desafío completo
-- [ ] Identifica qué entrada genera la clave
-- [ ] Busca patrones en los datos encriptados
-
-### 2. **Durante la resolución**
-- [ ] Toma notas de cada intento
-- [ ] Usa herramientas online para validar (Caesar cipher tools, MD5 crackers)
-- [ ] Si es un puzzle, dibuja el estado en papel
-
-### 3. **Verificación final**
-- [ ] Confirma que la clave es correcta
-- [ ] Ejecuta el código de desencriptación
-- [ ] Valida que la flag esté en formato `JEISI{...}`
-
-### 4. **Si te atascas**
-- Desafío 1 (Cesar): Prueba ROT13 primero, luego otros valores
-- Desafío 2 (Enigma): Crea un script que pruebe todas las combinaciones
-- Desafío 3 (Sudoku): Usa lógica deductiva, busca celdas con solo una opción
-- Desafío 4 (Hash): Prueba con herramientas online de cracking
-- Desafío 5 (FSM): Dibuja el diagrama de estados en papel
-
----
-
-## Recursos Adicionales
-
-### Herramientas Online Recomendadas
-
-- **Cifrado Cesar:** https://www.dcode.fr/caesar-cipher
-- **MD5 Reverse:** https://www.md5online.org/
-- **Sudoku Solver:** https://www.sudoku.com/solver/
-- **Regex Tester:** https://regex101.com/
-
-### Librerías Python Útiles
-
-```python
-import hashlib       # Para hashes
-import itertools     # Para combinaciones
-from collections import deque  # Para BFS en puzzles
-```
-
+| Desafío | Estrategia | Complejidad |
+|---------|-----------|-------------|
+| 1 - Cesar | Fuerza bruta de desplazamientos | ⭐ Baja |
+| 2 - Enigma | Probar combinaciones de rotores | ⭐⭐ Media |
+| 3 - Sudoku | Lógica deductiva + restricciones | ⭐⭐⭐ Alta |
+| 4 - Hash | Tabla de búsqueda MD5 | ⭐⭐ Media |
+| 5 - FSM | Análisis de caminos en grafo | ⭐⭐⭐ Alta |
